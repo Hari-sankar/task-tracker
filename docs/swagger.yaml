@@ -1,0 +1,368 @@
+basePath: /
+definitions:
+  models.Task:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      status:
+        $ref: '#/definitions/models.TaskStatus'
+      title:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+  models.TaskStatus:
+    enum:
+    - PENDING
+    - IN_PROGRESS
+    - COMPLETED
+    type: string
+    x-enum-varnames:
+    - Pending
+    - InProgress
+    - Completed
+  schemas.CreateTaskRequest:
+    properties:
+      description:
+        type: string
+      title:
+        type: string
+    required:
+    - title
+    type: object
+  schemas.CreateTaskResponse:
+    properties:
+      id:
+        type: string
+    type: object
+  schemas.DeleteTaskResponse:
+    properties:
+      id:
+        type: string
+    type: object
+  schemas.GetAllTasksResponse:
+    properties:
+      tasks:
+        items:
+          $ref: '#/definitions/schemas.TaskResponse'
+        type: array
+    type: object
+  schemas.GetTaskByIDResponse:
+    properties:
+      task:
+        $ref: '#/definitions/schemas.TaskResponse'
+    type: object
+  schemas.SignInRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  schemas.SignInResponse:
+    properties:
+      token:
+        type: string
+    type: object
+  schemas.SignUpRequest:
+    properties:
+      password:
+        maxLength: 100
+        minLength: 8
+        type: string
+      username:
+        maxLength: 30
+        minLength: 3
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  schemas.SignUpResponse:
+    properties:
+      userID:
+        type: string
+    type: object
+  schemas.TaskResponse:
+    properties:
+      description:
+        type: string
+      due_date:
+        type: string
+      id:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+      user_id:
+        type: string
+    type: object
+  schemas.UpdateTaskRequest:
+    properties:
+      description:
+        type: string
+      id:
+        type: string
+      status:
+        allOf:
+        - $ref: '#/definitions/models.TaskStatus'
+        enum:
+        - PENDING
+        - IN_PROGRESS
+        - COMPLETED
+      title:
+        type: string
+    required:
+    - id
+    type: object
+  schemas.UpdateTaskResponse:
+    properties:
+      task:
+        $ref: '#/definitions/models.Task'
+    type: object
+  utils.ErrorStruct:
+    properties:
+      code:
+        type: integer
+      message:
+        type: string
+    type: object
+host: localhost:3000
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: This is a simple task tracker API
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: task-tracker API
+  version: "1.0"
+paths:
+  /auth/signin:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user and return JWT token
+      parameters:
+      - description: Sign in credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/schemas.SignInRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.SignInResponse'
+        "401":
+          description: Invalid credentials
+          schema:
+            $ref: '#/definitions/utils.ErrorStruct'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorStruct'
+      summary: Login user
+      tags:
+      - auth
+  /auth/signup:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user with username, password and type
+      parameters:
+      - description: Sign up request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/schemas.SignUpRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.SignUpResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ErrorStruct'
+        "409":
+          description: Username already exists
+          schema:
+            $ref: '#/definitions/utils.ErrorStruct'
+        "503":
+          description: Database connection error
+          schema:
+            $ref: '#/definitions/utils.ErrorStruct'
+      summary: Register a new user
+      tags:
+      - auth
+  /task:
+    get:
+      consumes:
+      - application/json
+      description: Get all tasks
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Tasks retrieved successfully
+          schema:
+            $ref: '#/definitions/schemas.GetAllTasksResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorStruct'
+      security:
+      - BearerAuth: []
+      summary: Get all tasks
+      tags:
+      - task
+    patch:
+      consumes:
+      - application/json
+      description: Update task
+      parameters:
+      - description: Update Task request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/schemas.UpdateTaskRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Task updated successfully
+          schema:
+            $ref: '#/definitions/schemas.UpdateTaskResponse'
+        "400":
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/utils.ErrorStruct'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorStruct'
+      security:
+      - BearerAuth: []
+      summary: Update task
+      tags:
+      - task
+    post:
+      consumes:
+      - application/json
+      description: Create a new task
+      parameters:
+      - description: Create Task request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/schemas.CreateTaskRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.CreateTaskResponse'
+        "401":
+          description: Invalid credentials
+          schema:
+            $ref: '#/definitions/utils.ErrorStruct'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorStruct'
+      security:
+      - BearerAuth: []
+      summary: Create a new task
+      tags:
+      - task
+  /task/{taskID}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete task
+      parameters:
+      - description: Task ID
+        example: 123e4567-e89b-12d3-a456-426614174000
+        in: path
+        name: taskID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Task deleted successfully
+          schema:
+            $ref: '#/definitions/schemas.DeleteTaskResponse'
+        "400":
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/utils.ErrorStruct'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorStruct'
+      security:
+      - BearerAuth: []
+      summary: Delete task
+      tags:
+      - task
+    get:
+      consumes:
+      - application/json
+      description: Get a task by id
+      parameters:
+      - description: taskID
+        example: 123e4567-e89b-12d3-a456-426614174000
+        in: path
+        name: taskID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Tasks retrieved successfully
+          schema:
+            $ref: '#/definitions/schemas.GetTaskByIDResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorStruct'
+      security:
+      - BearerAuth: []
+      summary: Get a task
+      tags:
+      - task
+schemes:
+- http
+- https
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
