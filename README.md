@@ -86,7 +86,7 @@ The API documentation is available in multiple formats:
 ### Interactive Swagger UI
 Access the interactive API documentation at:
 ```http
-http://localhost:3000/swagger/index.html
+http://localhost:3000/swagger/docs/index.html
 ```
 
 ## Raw Documentation Files
