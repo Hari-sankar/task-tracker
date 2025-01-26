@@ -37,6 +37,10 @@ COPY db/migrations ./migrations
 
 # Set execute permissions
 RUN chmod +x migrate.sh
+# Set line ending to Unix-style
+RUN dos2unix migrate.sh 
+
+
 
 EXPOSE 3000
 
